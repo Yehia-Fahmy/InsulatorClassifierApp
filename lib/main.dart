@@ -15,7 +15,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   // some colors
-  Color themeColor = Colors.indigo[700];
+  Color themeColor = Colors.green[800];
   Color themeColor3 = Colors.grey[400];
   // variables used to display information
   String classification = "";
