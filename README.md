@@ -4,4 +4,5 @@ Currently the app works only on android and has a low accuracy.
 
 Further work will be done to procedurally analyze parts of the image rather than the whole thing at once.
 
-![Alt text](insulator_classifier_app/assets/AppPreview0.PNG?raw=true "Title")
+![](assets/AppPreview0.PNG)
+![](assets/AppPreview1.PNG)
