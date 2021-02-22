@@ -30,6 +30,17 @@ class _HomeState extends State<Home> {
   List _outputs;
   bool _loading = false;
 
+  Image cropImage(Image inputImage, int horizontal, int vertical){
+    Image outputImage;
+    imglib.Image image = inputImage as imglib.Image;
+
+    imglib.Image croppedImage = imglib.copyCrop(image, 1, 1, horizontal, vertical);
+
+    outputImage = Image.memory(imglib.encodeJpg(croppedImage));
+
+    return outputImage;
+  }
+
   // member functions
   updateVariables(){
     setState(() {
@@ -62,6 +73,7 @@ class _HomeState extends State<Home> {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
     if (image == null) return null;
     classifyImage(image);
+    cropImage(Image.file(image), 100, 100);
     setState(() {
       _image = image;
     });
@@ -122,105 +134,107 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(30.0),
-        child: Center(
-          child: Column(
-            children: [
-              // display an icon if no image present
-              Container(
-                height: 350,
-                width: 350,
-                child: _image == null ? Icon(Icons.camera_alt_outlined) : Image.file(_image),
-                color: themeColor,
-              ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(30.0),
+          child: Center(
+            child: Column(
+              children: [
+                // display an icon if no image present
+                Container(
+                  height: 350,
+                  width: 350,
+                  child: _image == null ? Icon(Icons.camera_alt_outlined) : Image.file(_image),
+                  color: themeColor,
+                ),
 
-              // Classify button
-              Padding(
-                padding: EdgeInsets.all(15.0),
-                child: ElevatedButton(
-                  child: Text('Classify'),
-                  onPressed: () {
-                    updateVariables();
-                  },
-                  style: ButtonStyle(
-                    foregroundColor: MaterialStateProperty.all(themeColor3),
-                    backgroundColor: MaterialStateProperty.all(themeColor),
+                // Classify button
+                Padding(
+                  padding: EdgeInsets.all(15.0),
+                  child: ElevatedButton(
+                    child: Text('Classify'),
+                    onPressed: () {
+                      updateVariables();
+                    },
+                    style: ButtonStyle(
+                      foregroundColor: MaterialStateProperty.all(themeColor3),
+                      backgroundColor: MaterialStateProperty.all(themeColor),
+                    ),
                   ),
                 ),
-              ),
 
-              // Classification
-              Container(
-                color: themeColor,
-                padding: EdgeInsets.all(10),
-                child: Column(
-                  children: [
-                    Text(
-                      'Class: $classification',
-                      style: TextStyle(
+                // Classification
+                Container(
+                  color: themeColor,
+                  padding: EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Class: $classification',
+                        style: TextStyle(
+                          color: themeColor3,
+                          fontSize: 18,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+
+                      Divider(
                         color: themeColor3,
-                        fontSize: 18,
-                        letterSpacing: 1.5,
+                        height: 10,
+                      ),
+
+                      // Certainty
+                      Text(
+                        'Certainty: $certaintyString %',
+                        style: TextStyle(
+                          color: themeColor3,
+                          fontSize: 18,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // take/choose photo buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(15.0),
+                      child: ElevatedButton(
+                        child: Icon(
+                          Icons.camera_alt_outlined,
+                        ),
+                        onPressed: () {
+                          takePicture();
+                        },
+                        style: ButtonStyle(
+                          foregroundColor: MaterialStateProperty.all(themeColor3),
+                          backgroundColor: MaterialStateProperty.all(themeColor),
+                        ),
                       ),
                     ),
 
-                    Divider(
-                      color: themeColor3,
-                      height: 10,
-                    ),
-
-                    // Certainty
-                    Text(
-                      'Certainty: $certaintyString %',
-                      style: TextStyle(
-                        color: themeColor3,
-                        fontSize: 18,
-                        letterSpacing: 1.5,
+                    Padding(
+                      padding: EdgeInsets.all(15.0),
+                      child: ElevatedButton(
+                        child: Icon(
+                          Icons.photo,
+                        ),
+                        onPressed: () {
+                          pickImage();
+                        },
+                        style: ButtonStyle(
+                          foregroundColor: MaterialStateProperty.all(themeColor3),
+                          backgroundColor: MaterialStateProperty.all(themeColor),
+                        ),
                       ),
                     ),
                   ],
-                ),
-              ),
-
-              // take/choose photo buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(15.0),
-                    child: ElevatedButton(
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                      ),
-                      onPressed: () {
-                        takePicture();
-                      },
-                      style: ButtonStyle(
-                        foregroundColor: MaterialStateProperty.all(themeColor3),
-                        backgroundColor: MaterialStateProperty.all(themeColor),
-                      ),
-                    ),
-                  ),
-
-                  Padding(
-                    padding: EdgeInsets.all(15.0),
-                    child: ElevatedButton(
-                      child: Icon(
-                        Icons.photo,
-                      ),
-                      onPressed: () {
-                        pickImage();
-                      },
-                      style: ButtonStyle(
-                        foregroundColor: MaterialStateProperty.all(themeColor3),
-                        backgroundColor: MaterialStateProperty.all(themeColor),
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            ],
+                )
+              ],
+            ),
           ),
         ),
       ),
