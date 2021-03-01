@@ -41,8 +41,8 @@ class _HomeState extends State<Home> {
 
   loadModel() async {
     await Tflite.loadModel(
-      model: "assets/model_unquant.tflite",   // this model was trained using google.trainable.net (its not very good)
-      //model: "assets/classifier_model.tflite",
+      //model: "assets/model_unquant.tflite",   // this model was trained using google.trainable.net (its not very good)
+      model: "assets/TF_Lite_Model.tflite",
       labels: "assets/labels.txt",
     );
   }
