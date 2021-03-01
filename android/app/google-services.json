@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "634873780678",
-    "project_id": "insulator-classifier-app",
-    "storage_bucket": "insulator-classifier-app.appspot.com"
+    "project_number": "129641645901",
+    "project_id": "insulator-classifier-app-4da31",
+    "storage_bucket": "insulator-classifier-app-4da31.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:634873780678:android:a64b0f5cfc7469cd1d3ac7",
+        "mobilesdk_app_id": "1:129641645901:android:68d7243de3768d302ad904",
         "android_client_info": {
           "package_name": "com.example.insulator_classifier_app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "634873780678-f1tf7gcpeqsi10hah5fuafr2642mr78f.apps.googleusercontent.com",
+          "client_id": "129641645901-g27v086tfs3ul9ebptomm7d1lg1jb9bp.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyC0cnz0sS-xk6YNXApGw-9eyptpbVJpdaY"
+          "current_key": "AIzaSyBXHC3OF5bUCxRtjZctoWAYokNaREU3gmE"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "634873780678-f1tf7gcpeqsi10hah5fuafr2642mr78f.apps.googleusercontent.com",
+              "client_id": "129641645901-g27v086tfs3ul9ebptomm7d1lg1jb9bp.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
