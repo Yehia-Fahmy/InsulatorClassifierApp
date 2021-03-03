@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
+import 'package:firebase_ml_custom/firebase_ml_custom.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:insulator_classifier_app/model.dart';
 //import 'package:image/image.dart';
 
 void main() {
@@ -30,8 +33,28 @@ class _HomeState extends State<Home> {
   // classification variables
   List _outputs;
   bool _loading = false;
+  // Firebase Remote ML Objects
+  FirebaseCustomRemoteModel remoteModel = FirebaseCustomRemoteModel('TF_Lite_Model');
+  FirebaseModelDownloadConditions conditions =
+  FirebaseModelDownloadConditions(
+      androidRequireWifi: true,
+      androidRequireDeviceIdle: true);
+  FirebaseModelManager modelManager = FirebaseModelManager.instance;
+
 
   // member functions
+  Future<File> downloadModel() async {
+    await modelManager.download(remoteModel, conditions);
+    if (await modelManager.isModelDownloaded(remoteModel) == true){
+      print('model was succesfully downloaded');
+      File modelFile = await modelManager.getLatestModelFile(remoteModel);
+      return modelFile;
+    }else {
+      print('an error occured while downloading');
+      return null;
+    }
+  }
+
   updateVariables(){
     setState(() {
       classification = _outputs[0]['label'].toString().substring(2);
@@ -86,14 +109,22 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    Tflite.close();
-    super.initState();
     _loading = true;
-    loadModel().then((value) {
-      setState(() {
-        _loading = false;
-      });
+    try {
+      downloadModel();
+    } catch (e) {
+      print('an error occured while downloading');
+    }
+    setState(() {
+      _loading = false;
     });
+    // Tflite.close();
+    // super.initState();
+    // loadModel().then((value) {
+    //   setState(() {
+    //     _loading = false;
+    //   });
+    // });
   }
 
   @override
