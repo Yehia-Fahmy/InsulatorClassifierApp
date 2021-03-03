@@ -36,14 +36,6 @@ class _HomeState extends State<Home> {
   bool _loading = false;
   // string to hold the result of loading the model
   Future<String> _loadedMessage;
-  // Firebase Remote ML Objects
-  FirebaseCustomRemoteModel remoteModel = FirebaseCustomRemoteModel('TF_Lite_Model');
-  FirebaseModelDownloadConditions conditions =
-  FirebaseModelDownloadConditions(
-      androidRequireWifi: true,
-      androidRequireDeviceIdle: true);
-  FirebaseModelManager modelManager = FirebaseModelManager.instance;
-
 
   // member functions
   static Future<String> mlLoadModel() async {
@@ -54,7 +46,7 @@ class _HomeState extends State<Home> {
   static Future<File> loadModelFromFirebase() async {
     try {
       // Create model with a name that is specified in the Firebase console
-      final model = FirebaseCustomRemoteModel('mobilenet_v1_1_0_224');
+      final model = FirebaseCustomRemoteModel('TF_Lite_Model');
 
       // Specify conditions when the model can be downloaded.
       // If there is no wifi access when the app is started,
@@ -84,9 +76,9 @@ class _HomeState extends State<Home> {
     try {
       final appDirectory = await getApplicationDocumentsDirectory();
       final labelsData =
-      await rootBundle.load("assets/labels_mobilenet_v1_224.txt");
+      await rootBundle.load("assets/labels.txt");
       final labelsFile =
-      await File(appDirectory.path + "/_labels_mobilenet_v1_224.txt")
+      await File(appDirectory.path + "/_labels.txt")
           .writeAsBytes(labelsData.buffer.asUint8List(
           labelsData.offsetInBytes, labelsData.lengthInBytes));
 
@@ -161,7 +153,7 @@ class _HomeState extends State<Home> {
   void initState() {
     _loading = true;
     setState(() {
-      _loadedMessage = loadModel();
+      _loadedMessage = mlLoadModel();
       _loading = false;
     });
     // Tflite.close();
