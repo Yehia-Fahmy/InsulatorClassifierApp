@@ -3,8 +3,9 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
 import 'package:firebase_ml_custom/firebase_ml_custom.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:insulator_classifier_app/model.dart';
 //import 'package:image/image.dart';
 
 void main() {
@@ -33,6 +34,8 @@ class _HomeState extends State<Home> {
   // classification variables
   List _outputs;
   bool _loading = false;
+  // string to hold the result of loading the model
+  Future<String> _loadedMessage;
   // Firebase Remote ML Objects
   FirebaseCustomRemoteModel remoteModel = FirebaseCustomRemoteModel('TF_Lite_Model');
   FirebaseModelDownloadConditions conditions =
@@ -43,15 +46,62 @@ class _HomeState extends State<Home> {
 
 
   // member functions
-  Future<File> downloadModel() async {
-    await modelManager.download(remoteModel, conditions);
-    if (await modelManager.isModelDownloaded(remoteModel) == true){
-      print('model was succesfully downloaded');
-      File modelFile = await modelManager.getLatestModelFile(remoteModel);
+  static Future<String> mlLoadModel() async {
+    final modelFile = await loadModelFromFirebase();
+    return await loadTFLiteModel(modelFile);
+  }
+
+  static Future<File> loadModelFromFirebase() async {
+    try {
+      // Create model with a name that is specified in the Firebase console
+      final model = FirebaseCustomRemoteModel('mobilenet_v1_1_0_224');
+
+      // Specify conditions when the model can be downloaded.
+      // If there is no wifi access when the app is started,
+      // this app will continue loading until the conditions are satisfied.
+      final conditions = FirebaseModelDownloadConditions(
+          androidRequireWifi: true, iosAllowCellularAccess: false);
+
+      // Create model manager associated with default Firebase App instance.
+      final modelManager = FirebaseModelManager.instance;
+
+      // Begin downloading and wait until the model is downloaded successfully.
+      await modelManager.download(model, conditions);
+      assert(await modelManager.isModelDownloaded(model) == true);
+
+      // Get latest model file to use it for inference by the interpreter.
+      var modelFile = await modelManager.getLatestModelFile(model);
+      assert(modelFile != null);
       return modelFile;
-    }else {
-      print('an error occured while downloading');
-      return null;
+    } catch (exception) {
+      print('Failed on loading your model from Firebase: $exception');
+      print('The program will not be resumed');
+      rethrow;
+    }
+  }
+
+  static Future<String> loadTFLiteModel(File modelFile) async {
+    try {
+      final appDirectory = await getApplicationDocumentsDirectory();
+      final labelsData =
+      await rootBundle.load("assets/labels_mobilenet_v1_224.txt");
+      final labelsFile =
+      await File(appDirectory.path + "/_labels_mobilenet_v1_224.txt")
+          .writeAsBytes(labelsData.buffer.asUint8List(
+          labelsData.offsetInBytes, labelsData.lengthInBytes));
+
+      assert(await Tflite.loadModel(
+        model: modelFile.path,
+        labels: labelsFile.path,
+        isAsset: false,
+      ) ==
+          "success");
+      return "Model is loaded";
+    } catch (exception) {
+      print(
+          'Failed on loading your model to the TFLite interpreter: $exception');
+      print('The program will not be resumed');
+      rethrow;
     }
   }
 
@@ -110,12 +160,8 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     _loading = true;
-    try {
-      downloadModel();
-    } catch (e) {
-      print('an error occured while downloading');
-    }
     setState(() {
+      _loadedMessage = loadModel();
       _loading = false;
     });
     // Tflite.close();
