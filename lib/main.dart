@@ -44,15 +44,6 @@ class _HomeState extends State<Home> {
     });
   }
 
-  loadModel() async {
-    await Tflite.loadModel(
-      //model: "assets/model_unquant.tflite",   // this model was trained using google.trainable.net (its not very good)
-      //labels: "assets/labels.txt",
-      model: "assets/AutoML_Model.tflite",
-      labels: "assets/AutoML_Labels.txt"
-    );
-  }
-
   @override
   void dispose() {
     Tflite.close();
@@ -90,26 +81,16 @@ class _HomeState extends State<Home> {
   }
 
   @override
-  void initState() {
-    _loading = true;
-    // initializeFlutterFire();
-    // setState(() {
-    //   _loadedMessage = mlLoadModel();
-    //   _loading = false;
-    // });
-    // if (_initialized) {
-    //   print('flutterfire has initialized succesfully');
-    // }
-    // else {
-    //   print('we were unable to initialize');
-    // }
-    Tflite.close();
+  void initState() async {
     super.initState();
-    loadModel().then((value) {
-      setState(() {
-        _loading = false;
-      });
-    });
+    _loading = true;
+    String res = await Tflite.loadModel(
+      //model: "assets/model_unquant.tflite",   // this model was trained using google.trainable.net (its not very good)
+      //labels: "assets/labels.txt",
+        model: "assets/AutoML_Model.tflite",
+        labels: "assets/AutoML_Labels.txt"
+    );
+    print('res = $res');
   }
 
   @override
