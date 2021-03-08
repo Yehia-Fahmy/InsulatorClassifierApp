@@ -22,9 +22,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // initialization variables
-  bool _initialized = false;
-  bool _error = false;
   // some colors
   Color themeColor = Colors.green[900];
   Color themeColor3 = Colors.grey[400];
@@ -37,8 +34,6 @@ class _HomeState extends State<Home> {
   // classification variables
   List _outputs;
   bool _loading = false;
-  // string to hold the result of loading the model
-  Future<String> _loadedMessage;
 
   // member functions
   updateVariables(){
