@@ -22,6 +22,9 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  // initialization variables
+  bool _initialized = false;
+  bool _error = false;
   // some colors
   Color themeColor = Colors.green[900];
   Color themeColor3 = Colors.grey[400];
@@ -38,6 +41,21 @@ class _HomeState extends State<Home> {
   Future<String> _loadedMessage;
 
   // member functions
+  void initializeFlutterFire() async {
+    try {
+      await Firebase.initializeApp();
+      setState(() {
+        _initialized = true;
+      });
+    }
+    catch (e){
+      setState(() {
+        _error = true;
+      });
+    }
+  }
+
+
   static Future<String> mlLoadModel() async {
     final modelFile = await loadModelFromFirebase();
     return await loadTFLiteModel(modelFile);
@@ -152,17 +170,24 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     _loading = true;
-    setState(() {
-      _loadedMessage = mlLoadModel();
-      _loading = false;
-    });
-    // Tflite.close();
-    // super.initState();
-    // loadModel().then((value) {
-    //   setState(() {
-    //     _loading = false;
-    //   });
+    // initializeFlutterFire();
+    // setState(() {
+    //   _loadedMessage = mlLoadModel();
+    //   _loading = false;
     // });
+    // if (_initialized) {
+    //   print('flutterfire has initialized succesfully');
+    // }
+    // else {
+    //   print('we were unable to initialize');
+    // }
+    Tflite.close();
+    super.initState();
+    loadModel().then((value) {
+      setState(() {
+        _loading = false;
+      });
+    });
   }
 
   @override
