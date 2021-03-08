@@ -80,17 +80,25 @@ class _HomeState extends State<Home> {
     });
   }
 
-  @override
-  void initState() async {
-    super.initState();
-    _loading = true;
+  Future loadModel() async {
     String res = await Tflite.loadModel(
       //model: "assets/model_unquant.tflite",   // this model was trained using google.trainable.net (its not very good)
       //labels: "assets/labels.txt",
         model: "assets/AutoML_Model.tflite",
         labels: "assets/AutoML_Labels.txt"
     );
-    print('res = $res');
+    print('Loading the Model was $res');
+    return res;
+  }
+
+  @override
+  void initState() {
+    _loading = true;
+    super.initState();
+    loadModel();
+    setState(() {
+      _loading = false;
+    });
   }
 
   @override
