@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
-import 'package:firebase_ml_custom/firebase_ml_custom.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:firebase_core/firebase_core.dart';
-//import 'package:image/image.dart';
+
 
 void main() {
   runApp(MaterialApp(
@@ -62,7 +58,6 @@ class _HomeState extends State<Home> {
     setState(() {
       _image = image;
     });
-    updateVariables();
   }
 
   classifyImage(File image) async {
@@ -146,9 +141,7 @@ class _HomeState extends State<Home> {
                 padding: EdgeInsets.all(15.0),
                 child: ElevatedButton(
                   child: Text('Classify'),
-                  onPressed: () {
-                    updateVariables();
-                  },
+                  onPressed: updateVariables,
                   style: ButtonStyle(
                     foregroundColor: MaterialStateProperty.all(themeColor3),
                     backgroundColor: MaterialStateProperty.all(themeColor),
