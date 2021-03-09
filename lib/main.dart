@@ -34,7 +34,7 @@ class _HomeState extends State<Home> {
   bool _firebaseInitialized = false;
   bool _firebaseError = false;
   FirebaseApp defaultApp;
-  FirebaseCustomRemoteModel remoteModel = FirebaseCustomRemoteModel('TF_Lite_Model');
+  FirebaseCustomRemoteModel remoteModel = FirebaseCustomRemoteModel('Test_Model');
   FirebaseModelDownloadConditions conditions =
   FirebaseModelDownloadConditions(
       androidRequireWifi: true,
