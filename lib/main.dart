@@ -29,8 +29,6 @@ class _HomeState extends State<Home> {
   // classification variables
   List _outputs;
   bool _loading = false;
-  // string to hold the result of loading the model
-  Future<String> _loadedMessage;
 
   // member functions
   updateVariables(){
