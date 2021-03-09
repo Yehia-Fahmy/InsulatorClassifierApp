@@ -46,8 +46,12 @@ class _HomeState extends State<Home> {
 
   // Firebase functions
   void downloadModel() async {
+    print('starting download');
     try {
+      bool res = false;
       await modelManager.download(remoteModel, conditions);
+      res = await modelManager.isModelDownloaded(remoteModel);
+      if (res) print('model has been successfully downloaded');
     }
     catch (e){
       print('there was an error downloading the model');
