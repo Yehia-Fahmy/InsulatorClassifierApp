@@ -34,7 +34,28 @@ class _HomeState extends State<Home> {
   bool _firebaseInitialized = false;
   bool _firebaseError = false;
 
+  // Firebase functions
+  void initializeFlutterFire() async {
+    try {
+      await Firebase.initializeApp();
+      setState(() {
+        _firebaseInitialized = true;
+      });
+    } catch(e) {
+      print('error initializing firebase');
+      setState(() {
+        _firebaseError = true;
+      });
+    }
+  }
+
   // member functions
+  @override
+  void initState() {
+    initializeFlutterFire();
+    super.initState();
+  }
+
   updateVariables(){
     setState(() {
       classification = _outputs[0]['label'].toString().substring(2);
@@ -55,11 +76,6 @@ class _HomeState extends State<Home> {
 
   classifyImage(File image) async {
     print('classifying');
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 
   @override
@@ -99,7 +115,7 @@ class _HomeState extends State<Home> {
                 height: 350,
                 width: 350,
                 child: _image == null ? Icon(Icons.camera_alt_outlined) : Image.file(_image),
-                color: themeColor,
+                color: _firebaseError ? Colors.red[800] : themeColor,
               ),
 
               // Classify button
