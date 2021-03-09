@@ -43,10 +43,6 @@ class _HomeState extends State<Home> {
     });
   }
 
-  takePicture(){
-    // TODO implement taking picture with camera
-  }
-
   // function to pick the image from library
   pickImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
@@ -165,7 +161,7 @@ class _HomeState extends State<Home> {
                         Icons.camera_alt_outlined,
                       ),
                       onPressed: () {
-                        takePicture();
+                        print('take picture with camera');
                       },
                       style: ButtonStyle(
                         foregroundColor: MaterialStateProperty.all(themeColor3),
