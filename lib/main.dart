@@ -51,7 +51,11 @@ class _HomeState extends State<Home> {
       bool res = false;
       await modelManager.download(remoteModel, conditions);
       res = await modelManager.isModelDownloaded(remoteModel);
-      if (res) print('model has been successfully downloaded');
+      if (res) {
+        print('model has been successfully downloaded');
+      } else {
+        print('did not download');
+      }
     }
     catch (e){
       print('there was an error downloading the model');
