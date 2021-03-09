@@ -34,8 +34,26 @@ class _HomeState extends State<Home> {
   bool _firebaseInitialized = false;
   bool _firebaseError = false;
   FirebaseApp defaultApp;
+  FirebaseCustomRemoteModel remoteModel = FirebaseCustomRemoteModel('TF_Lite_Model');
+  FirebaseModelDownloadConditions conditions =
+  FirebaseModelDownloadConditions(
+      androidRequireWifi: true,
+      androidRequireDeviceIdle: true,
+      iosAllowCellularAccess: false,
+      iosAllowBackgroundDownloading: true);
+  FirebaseModelManager modelManager = FirebaseModelManager.instance;
+
 
   // Firebase functions
+  void downloadModel() async {
+    try {
+      await modelManager.download(remoteModel, conditions);
+    }
+    catch (e){
+      print('there was an error downloading the model');
+    }
+  }
+
   void initializeFlutterFire() async {
     try {
       defaultApp = await Firebase.initializeApp();
@@ -54,6 +72,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     initializeFlutterFire();
+    downloadModel();
     super.initState();
   }
 
