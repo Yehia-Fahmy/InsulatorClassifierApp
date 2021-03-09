@@ -33,11 +33,12 @@ class _HomeState extends State<Home> {
   // flutterfire variables
   bool _firebaseInitialized = false;
   bool _firebaseError = false;
+  FirebaseApp defaultApp;
 
   // Firebase functions
   void initializeFlutterFire() async {
     try {
-      await Firebase.initializeApp();
+      defaultApp = await Firebase.initializeApp();
       setState(() {
         _firebaseInitialized = true;
       });
