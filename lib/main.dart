@@ -30,6 +30,9 @@ class _HomeState extends State<Home> {
   // classification variables
   List _outputs;
   bool _loading = false;
+  // flutterfire variables
+  bool _firebaseInitialized = false;
+  bool _firebaseError = false;
 
   // member functions
   updateVariables(){
@@ -38,11 +41,6 @@ class _HomeState extends State<Home> {
       certainty = _outputs[0]['confidence'] * 100;
       certaintyString = certainty.toString().substring(0,5);
     });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   takePicture(){
