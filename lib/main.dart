@@ -51,6 +51,7 @@ class _HomeState extends State<Home> {
       if (res) {
         print('model has been successfully downloaded');
         modelFile = await modelManager.getLatestModelFile(remoteModel);
+        assert (modelFile != null);
       } else {
         print('did not download');
       }
