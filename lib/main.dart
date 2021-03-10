@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_ml_custom/firebase_ml_custom.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:tflite/tflite.dart';
 
 void main() {
   runApp(MaterialApp(
