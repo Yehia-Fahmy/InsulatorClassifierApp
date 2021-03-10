@@ -46,7 +46,6 @@ class _HomeState extends State<Home> {
     print('loading model...');
     String loadResult = await Tflite.loadModel(
       model: modelFile.path,
-      labels: 'assets/labels.txt',
       isAsset: false,
     );
     print("Loading Results: $loadResult");
