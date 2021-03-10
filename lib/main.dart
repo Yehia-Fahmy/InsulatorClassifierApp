@@ -38,7 +38,6 @@ class _HomeState extends State<Home> {
   FirebaseModelDownloadConditions conditions =
   FirebaseModelDownloadConditions(
       androidRequireWifi: true,
-      androidRequireDeviceIdle: true,
       iosAllowCellularAccess: false,
       iosAllowBackgroundDownloading: true);
   FirebaseModelManager modelManager = FirebaseModelManager.instance;
