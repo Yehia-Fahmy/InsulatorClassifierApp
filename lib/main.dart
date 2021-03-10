@@ -109,7 +109,7 @@ class _HomeState extends State<Home> {
   pickImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
     if (image == null) return null;
-    classifyImage(image);
+    await classifyImage(image);
     setState(() {
       _image = image;
     });
