@@ -38,6 +38,7 @@ class _HomeState extends State<Home> {
   FirebaseModelDownloadConditions conditions =
   FirebaseModelDownloadConditions();
   FirebaseModelManager modelManager = FirebaseModelManager.instance;
+  File modelFile;
 
   // Firebase functions
   void downloadModel() async {
@@ -48,6 +49,7 @@ class _HomeState extends State<Home> {
       res = await modelManager.isModelDownloaded(remoteModel);
       if (res) {
         print('model has been successfully downloaded');
+        modelFile = await modelManager.getLatestModelFile(remoteModel);
       } else {
         print('did not download');
       }
