@@ -112,7 +112,15 @@ class _HomeState extends State<Home> {
   }
 
   classifyImage(File image) async {
-    print('classifying');
+    print('classifying...');
+    var recognitions = await Tflite.runModelOnImage(
+        path: image.path,   // required
+        imageMean: 0.0,   // defaults to 117.0
+        imageStd: 255.0,  // defaults to 1.0
+        numResults: 2,    // defaults to 5
+        threshold: 0.2,   // defaults to 0.1
+        asynch: true      // defaults to true
+    );
   }
 
   @override
