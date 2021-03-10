@@ -34,7 +34,7 @@ class _HomeState extends State<Home> {
   bool _firebaseInitialized = false;
   bool _firebaseError = false;
   FirebaseApp defaultApp;
-  FirebaseCustomRemoteModel remoteModel = FirebaseCustomRemoteModel('Test_Model');
+  FirebaseCustomRemoteModel remoteModel = FirebaseCustomRemoteModel('TF_Lite_Model');
   FirebaseModelDownloadConditions conditions =
   FirebaseModelDownloadConditions();
   FirebaseModelManager modelManager = FirebaseModelManager.instance;
