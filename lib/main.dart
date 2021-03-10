@@ -36,10 +36,7 @@ class _HomeState extends State<Home> {
   FirebaseApp defaultApp;
   FirebaseCustomRemoteModel remoteModel = FirebaseCustomRemoteModel('Test_Model');
   FirebaseModelDownloadConditions conditions =
-  FirebaseModelDownloadConditions(
-      androidRequireWifi: true,
-      iosAllowCellularAccess: false,
-      iosAllowBackgroundDownloading: true);
+  FirebaseModelDownloadConditions();
   FirebaseModelManager modelManager = FirebaseModelManager.instance;
 
   // Firebase functions
