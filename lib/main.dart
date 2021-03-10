@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:tflite/tflite.dart';
 import 'package:firebase_ml_custom/firebase_ml_custom.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-//import 'package:image/image.dart';
+import 'package:tflite/tflite.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -22,9 +19,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // initialization variables
-  bool _initialized = false;
-  bool _error = false;
   // some colors
   Color themeColor = Colors.green[900];
   Color themeColor3 = Colors.grey[400];
@@ -37,157 +31,101 @@ class _HomeState extends State<Home> {
   // classification variables
   List _outputs;
   bool _loading = false;
-  // string to hold the result of loading the model
-  Future<String> _loadedMessage;
+  // flutterfire variables
+  bool _firebaseInitialized = false;
+  bool _firebaseError = false;
+  FirebaseApp defaultApp;
+  FirebaseCustomRemoteModel remoteModel = FirebaseCustomRemoteModel('TF_Lite_Model');
+  FirebaseModelDownloadConditions conditions =
+  FirebaseModelDownloadConditions();
+  FirebaseModelManager modelManager = FirebaseModelManager.instance;
+  File modelFile;
 
-  // member functions
-  void initializeFlutterFire() async {
+  // Firebase functions
+  void loadModel() async {
+    print('loading model...');
+    String loadResult = await Tflite.loadModel(
+      model: modelFile.path,
+      isAsset: false,
+    );
+    print("Loading Results: $loadResult");
+  }
+
+  void downloadModel() async {
+    print('starting download');
     try {
-      await Firebase.initializeApp();
-      setState(() {
-        _initialized = true;
-      });
+      bool downloadResult = false;
+      await modelManager.download(remoteModel, conditions);
+      downloadResult = await modelManager.isModelDownloaded(remoteModel);
+      if (downloadResult) {
+        print('model has been successfully downloaded');
+        modelFile = await modelManager.getLatestModelFile(remoteModel);
+        assert (modelFile != null);
+        loadModel();
+      } else {
+        print('did not download');
+      }
     }
     catch (e){
+      print('there was an error downloading the model');
+    }
+  }
+
+  void initializeFlutterFire() async {
+    try {
+      defaultApp = await Firebase.initializeApp();
       setState(() {
-        _error = true;
+        _firebaseInitialized = true;
+      });
+    } catch(e) {
+      print('error initializing firebase');
+      setState(() {
+        _firebaseError = true;
       });
     }
   }
 
-
-  static Future<String> mlLoadModel() async {
-    final modelFile = await loadModelFromFirebase();
-    return await loadTFLiteModel(modelFile);
-  }
-
-  static Future<File> loadModelFromFirebase() async {
-    try {
-      // Create model with a name that is specified in the Firebase console
-      final model = FirebaseCustomRemoteModel('TF_Lite_Model');
-
-      // Specify conditions when the model can be downloaded.
-      // If there is no wifi access when the app is started,
-      // this app will continue loading until the conditions are satisfied.
-      final conditions = FirebaseModelDownloadConditions(
-          androidRequireWifi: true, iosAllowCellularAccess: false);
-
-      // Create model manager associated with default Firebase App instance.
-      final modelManager = FirebaseModelManager.instance;
-
-      // Begin downloading and wait until the model is downloaded successfully.
-      await modelManager.download(model, conditions);
-      assert(await modelManager.isModelDownloaded(model) == true);
-
-      // Get latest model file to use it for inference by the interpreter.
-      var modelFile = await modelManager.getLatestModelFile(model);
-      assert(modelFile != null);
-      return modelFile;
-    } catch (exception) {
-      print('Failed on loading your model from Firebase: $exception');
-      print('The program will not be resumed');
-      rethrow;
-    }
-  }
-
-  static Future<String> loadTFLiteModel(File modelFile) async {
-    try {
-      final appDirectory = await getApplicationDocumentsDirectory();
-      final labelsData =
-      await rootBundle.load("assets/labels.txt");
-      final labelsFile =
-      await File(appDirectory.path + "/_labels.txt")
-          .writeAsBytes(labelsData.buffer.asUint8List(
-          labelsData.offsetInBytes, labelsData.lengthInBytes));
-
-      assert(await Tflite.loadModel(
-        model: modelFile.path,
-        labels: labelsFile.path,
-        isAsset: false,
-      ) ==
-          "success");
-      return "Model is loaded";
-    } catch (exception) {
-      print(
-          'Failed on loading your model to the TFLite interpreter: $exception');
-      print('The program will not be resumed');
-      rethrow;
-    }
+  // member functions
+  @override
+  void initState() {
+    initializeFlutterFire();
+    downloadModel();
+    super.initState();
   }
 
   updateVariables(){
-    setState(() {
-      classification = _outputs[0]['label'].toString().substring(2);
-      certainty = _outputs[0]['confidence'] * 100;
-      certaintyString = certainty.toString().substring(0,5);
-    });
-  }
-
-  loadModel() async {
-    await Tflite.loadModel(
-      model: "assets/model_unquant.tflite",   // this model was trained using google.trainable.net (its not very good)
-      //model: "assets/TF_Lite_Model.tflite",
-      labels: "assets/labels.txt",
-    );
-  }
-
-  @override
-  void dispose() {
-    Tflite.close();
-    super.dispose();
-  }
-
-  takePicture(){
-    // TODO implement taking picture with camera
+    if (_outputs != null){
+      setState(() {
+        classification = _outputs[0]['label'].toString().substring(2);
+        certainty = _outputs[0]['confidence'] * 100;
+        certaintyString = certainty.toString().substring(0,5);
+      });
+    }else{
+      print('outputs are null');
+    }
   }
 
   // function to pick the image from library
   pickImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
     if (image == null) return null;
-    classifyImage(image);
+    await classifyImage(image);
     setState(() {
       _image = image;
     });
-    updateVariables();
   }
 
   classifyImage(File image) async {
-    print('classifying');
-    var output = await Tflite.runModelOnImage(
-      path: image.path,
-      numResults: 2,
-      threshold: 0.5,
-      imageMean: 127.5,
-      imageStd: 127.5,
+    print('classifying...');
+    var recognitions = await Tflite.runModelOnImage(
+        path: image.path,   // required
+        imageMean: 0.0,   // defaults to 117.0
+        imageStd: 255.0,  // defaults to 1.0
+        numResults: 2,    // defaults to 5
+        threshold: 0.2,   // defaults to 0.1
+        asynch: true // defaults to true
     );
-    setState(() {
-      _loading = false;
-      _outputs = output;
-    });
-  }
-
-  @override
-  void initState() {
-    _loading = true;
-    // initializeFlutterFire();
-    // setState(() {
-    //   _loadedMessage = mlLoadModel();
-    //   _loading = false;
-    // });
-    // if (_initialized) {
-    //   print('flutterfire has initialized succesfully');
-    // }
-    // else {
-    //   print('we were unable to initialize');
-    // }
-    Tflite.close();
-    super.initState();
-    loadModel().then((value) {
-      setState(() {
-        _loading = false;
-      });
-    });
+    print('recognitions are: $recognitions');
   }
 
   @override
@@ -227,7 +165,7 @@ class _HomeState extends State<Home> {
                 height: 350,
                 width: 350,
                 child: _image == null ? Icon(Icons.camera_alt_outlined) : Image.file(_image),
-                color: themeColor,
+                color: _firebaseError ? Colors.red[800] : themeColor,
               ),
 
               // Classify button
@@ -289,7 +227,7 @@ class _HomeState extends State<Home> {
                         Icons.camera_alt_outlined,
                       ),
                       onPressed: () {
-                        takePicture();
+                        print('take picture with camera');
                       },
                       style: ButtonStyle(
                         foregroundColor: MaterialStateProperty.all(themeColor3),
