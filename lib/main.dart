@@ -44,9 +44,7 @@ class _HomeState extends State<Home> {
     print('starting download');
     try {
       bool res = false;
-      print('a');
       await modelManager.download(remoteModel, conditions);
-      print('a');
       res = await modelManager.isModelDownloaded(remoteModel);
       if (res) {
         print('model has been successfully downloaded');
