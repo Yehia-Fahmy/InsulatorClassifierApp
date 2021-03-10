@@ -125,6 +125,7 @@ class _HomeState extends State<Home> {
         threshold: 0.2,   // defaults to 0.1
         asynch: true      // defaults to true
     );
+    print('recognitions are: $recognitions');
   }
 
   @override
