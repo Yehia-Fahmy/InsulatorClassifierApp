@@ -94,11 +94,15 @@ class _HomeState extends State<Home> {
   }
 
   updateVariables(){
-    setState(() {
-      classification = _outputs[0]['label'].toString().substring(2);
-      certainty = _outputs[0]['confidence'] * 100;
-      certaintyString = certainty.toString().substring(0,5);
-    });
+    if (_outputs != null){
+      setState(() {
+        classification = _outputs[0]['label'].toString().substring(2);
+        certainty = _outputs[0]['confidence'] * 100;
+        certaintyString = certainty.toString().substring(0,5);
+      });
+    }else{
+      print('outputs are null');
+    }
   }
 
   // function to pick the image from library
