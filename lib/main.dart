@@ -42,16 +42,26 @@ class _HomeState extends State<Home> {
   File modelFile;
 
   // Firebase functions
+  void loadModel() async {
+    print('loading model...');
+    String loadResult = await Tflite.loadModel(
+      model: modelFile.path,
+      isAsset: false,
+    );
+    print("Loading Results: $loadResult");
+  }
+
   void downloadModel() async {
     print('starting download');
     try {
-      bool res = false;
+      bool downloadResult = false;
       await modelManager.download(remoteModel, conditions);
-      res = await modelManager.isModelDownloaded(remoteModel);
-      if (res) {
+      downloadResult = await modelManager.isModelDownloaded(remoteModel);
+      if (downloadResult) {
         print('model has been successfully downloaded');
         modelFile = await modelManager.getLatestModelFile(remoteModel);
         assert (modelFile != null);
+        loadModel();
       } else {
         print('did not download');
       }
