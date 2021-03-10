@@ -123,7 +123,7 @@ class _HomeState extends State<Home> {
         imageStd: 255.0,  // defaults to 1.0
         numResults: 2,    // defaults to 5
         threshold: 0.2,   // defaults to 0.1
-        asynch: true      // defaults to true
+        asynch: true // defaults to true
     );
     print('recognitions are: $recognitions');
   }
