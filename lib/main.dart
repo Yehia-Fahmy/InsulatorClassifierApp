@@ -61,36 +61,13 @@ class _HomeState extends State<Home> {
   }
 
   classifyImage(File image) async {
-    print('classifying');
-    var output = await Tflite.runModelOnImage(
-      path: image.path,
-      numResults: 2,
-      threshold: 0.5,
-      imageMean: 127.5,
-      imageStd: 127.5,
-    );
-    setState(() {
-      _loading = false;
-      _outputs = output;
-    });
-  }
-
-  Future loadModel() async {
-    String res = await Tflite.loadModel(
-      //model: "assets/model_unquant.tflite",   // this model was trained using google.trainable.net (its not very good)
-      //labels: "assets/labels.txt",
-        model: "assets/AutoML_Model.tflite",
-        labels: "assets/AutoML_Labels.txt"
-    );
-    print('Loading the Model was $res');
-    return res;
+    print('classifying...');
   }
 
   @override
   void initState() {
     _loading = true;
     super.initState();
-    loadModel();
     setState(() {
       _loading = false;
     });
