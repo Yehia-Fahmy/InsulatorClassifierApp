@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:tflite/tflite.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -46,12 +45,6 @@ class _HomeState extends State<Home> {
     }
   }
 
-  @override
-  void dispose() {
-    Tflite.close();
-    super.dispose();
-  }
-
   takePicture(){
     // TODO implement taking picture with camera
   }
@@ -74,7 +67,6 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     _loading = true;
-    Tflite.close();
     super.initState();
     _loading = false;
   }
