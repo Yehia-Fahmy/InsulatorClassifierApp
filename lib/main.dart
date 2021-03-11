@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
-import 'package:firebase_ml_custom/firebase_ml_custom.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:firebase_core/firebase_core.dart';
-//import 'package:image/image.dart';
+
 
 void main() {
   runApp(MaterialApp(
@@ -22,9 +18,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // initialization variables
-  bool _initialized = false;
-  bool _error = false;
   // some colors
   Color themeColor = Colors.green[900];
   Color themeColor3 = Colors.grey[400];
@@ -37,98 +30,14 @@ class _HomeState extends State<Home> {
   // classification variables
   List _outputs;
   bool _loading = false;
-  // string to hold the result of loading the model
-  Future<String> _loadedMessage;
 
   // member functions
-  void initializeFlutterFire() async {
-    try {
-      await Firebase.initializeApp();
-      setState(() {
-        _initialized = true;
-      });
-    }
-    catch (e){
-      setState(() {
-        _error = true;
-      });
-    }
-  }
-
-
-  static Future<String> mlLoadModel() async {
-    final modelFile = await loadModelFromFirebase();
-    return await loadTFLiteModel(modelFile);
-  }
-
-  static Future<File> loadModelFromFirebase() async {
-    try {
-      // Create model with a name that is specified in the Firebase console
-      final model = FirebaseCustomRemoteModel('TF_Lite_Model');
-
-      // Specify conditions when the model can be downloaded.
-      // If there is no wifi access when the app is started,
-      // this app will continue loading until the conditions are satisfied.
-      final conditions = FirebaseModelDownloadConditions(
-          androidRequireWifi: true, iosAllowCellularAccess: false);
-
-      // Create model manager associated with default Firebase App instance.
-      final modelManager = FirebaseModelManager.instance;
-
-      // Begin downloading and wait until the model is downloaded successfully.
-      await modelManager.download(model, conditions);
-      assert(await modelManager.isModelDownloaded(model) == true);
-
-      // Get latest model file to use it for inference by the interpreter.
-      var modelFile = await modelManager.getLatestModelFile(model);
-      assert(modelFile != null);
-      return modelFile;
-    } catch (exception) {
-      print('Failed on loading your model from Firebase: $exception');
-      print('The program will not be resumed');
-      rethrow;
-    }
-  }
-
-  static Future<String> loadTFLiteModel(File modelFile) async {
-    try {
-      final appDirectory = await getApplicationDocumentsDirectory();
-      final labelsData =
-      await rootBundle.load("assets/labels.txt");
-      final labelsFile =
-      await File(appDirectory.path + "/_labels.txt")
-          .writeAsBytes(labelsData.buffer.asUint8List(
-          labelsData.offsetInBytes, labelsData.lengthInBytes));
-
-      assert(await Tflite.loadModel(
-        model: modelFile.path,
-        labels: labelsFile.path,
-        isAsset: false,
-      ) ==
-          "success");
-      return "Model is loaded";
-    } catch (exception) {
-      print(
-          'Failed on loading your model to the TFLite interpreter: $exception');
-      print('The program will not be resumed');
-      rethrow;
-    }
-  }
-
   updateVariables(){
     setState(() {
       classification = _outputs[0]['label'].toString().substring(2);
       certainty = _outputs[0]['confidence'] * 100;
       certaintyString = certainty.toString().substring(0,5);
     });
-  }
-
-  loadModel() async {
-    await Tflite.loadModel(
-      model: "assets/model_unquant.tflite",   // this model was trained using google.trainable.net (its not very good)
-      //model: "assets/TF_Lite_Model.tflite",
-      labels: "assets/labels.txt",
-    );
   }
 
   @override
@@ -149,44 +58,18 @@ class _HomeState extends State<Home> {
     setState(() {
       _image = image;
     });
-    updateVariables();
   }
 
   classifyImage(File image) async {
-    print('classifying');
-    var output = await Tflite.runModelOnImage(
-      path: image.path,
-      numResults: 2,
-      threshold: 0.5,
-      imageMean: 127.5,
-      imageStd: 127.5,
-    );
-    setState(() {
-      _loading = false;
-      _outputs = output;
-    });
+    print('classifying...');
   }
 
   @override
   void initState() {
     _loading = true;
-    // initializeFlutterFire();
-    // setState(() {
-    //   _loadedMessage = mlLoadModel();
-    //   _loading = false;
-    // });
-    // if (_initialized) {
-    //   print('flutterfire has initialized succesfully');
-    // }
-    // else {
-    //   print('we were unable to initialize');
-    // }
-    Tflite.close();
     super.initState();
-    loadModel().then((value) {
-      setState(() {
-        _loading = false;
-      });
+    setState(() {
+      _loading = false;
     });
   }
 
@@ -235,9 +118,7 @@ class _HomeState extends State<Home> {
                 padding: EdgeInsets.all(15.0),
                 child: ElevatedButton(
                   child: Text('Classify'),
-                  onPressed: () {
-                    updateVariables();
-                  },
+                  onPressed: updateVariables,
                   style: ButtonStyle(
                     foregroundColor: MaterialStateProperty.all(themeColor3),
                     backgroundColor: MaterialStateProperty.all(themeColor),

@@ -63,4 +63,6 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:26.5.0')
     implementation 'com.google.firebase:firebase-ml-model-interpreter'
     implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+    implementation 'com.google.mlkit:image-labeling-automl:16.0.0'
+    implementation 'com.google.mlkit:linkfirebase:16.0.0'
 }

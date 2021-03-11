@@ -34,10 +34,6 @@ dev_dependencies:
     sdk: flutter
   image_picker: ^0.6.7+22
   tflite: ^1.1.1
-  image: ^2.1.19
-  firebase_ml_custom: ^0.1.0
-  firebase_core: ^0.7.0
-  path_provider: ^1.6.27
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
