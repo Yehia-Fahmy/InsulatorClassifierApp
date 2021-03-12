@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
+import 'package:image/image.dart' as img;
+
 
 void main() {
   runApp(MaterialApp(
@@ -93,8 +95,8 @@ class _HomeState extends State<Home> {
   classifyImage(File image) async {
     print('classifying...');
     var recognitions = await Tflite.runModelOnBinary(
-        binary: imageToByteListFloat32(image, 224, 127.5, 127.5),// required
-        numResults: 6,    // defaults to 5
+        binary: imageToByteListUint8(),// required
+        numResults: 7,    // defaults to 5
         threshold: 0.05,  // defaults to 0.1
         asynch: true      // defaults to true
     );
