@@ -41,6 +41,11 @@ class _HomeState extends State<Home> {
       isAsset: true
     );
     print("Result of loading the model: $res");
+    if (res == 'success'){
+      setState(() {
+        _initialized = true;
+      });
+    }
   }
 
   updateVariables(){
@@ -119,7 +124,7 @@ class _HomeState extends State<Home> {
                 height: 350,
                 width: 350,
                 child: _image == null ? Icon(Icons.camera_alt_outlined) : Image.file(_image),
-                color: themeColor,
+                color: _initialized ? themeColor : Colors.red[900],
               ),
 
               // Classify button
