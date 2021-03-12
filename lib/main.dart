@@ -1,9 +1,12 @@
+import 'dart:isolate';
+
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
 import 'package:image/image.dart' as img;
 import 'dart:typed_data';
+import 'dart:isolate';
 
 
 void main() {
@@ -71,7 +74,6 @@ class _HomeState extends State<Home> {
   pickImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
     if (image == null) return null;
-    classifyImage(image);
     setState(() {
       _image = image;
     });
@@ -93,10 +95,11 @@ class _HomeState extends State<Home> {
     return convertedBytes.buffer.asUint8List();
   }
 
-  classifyImage(File image) async {
+  classifyImage(File imageFile) async {
     print('classifying...');
+    img.Image image = img.decodeImage(imageFile.readAsBytesSync());
     var recognitions = await Tflite.runModelOnBinary(
-        binary: imageToByteListUint8(),// required
+        binary: imageToByteListUint8(image, 255),// required
         numResults: 7,    // defaults to 5
         threshold: 0.05,  // defaults to 0.1
         asynch: true      // defaults to true
@@ -157,9 +160,7 @@ class _HomeState extends State<Home> {
                 padding: EdgeInsets.all(15.0),
                 child: ElevatedButton(
                   child: Text('Classify'),
-                  onPressed: () {
-                    updateVariables();
-                  },
+                  onPressed: () => classifyImage(_image),
                   style: ButtonStyle(
                     foregroundColor: MaterialStateProperty.all(themeColor3),
                     backgroundColor: MaterialStateProperty.all(themeColor),
