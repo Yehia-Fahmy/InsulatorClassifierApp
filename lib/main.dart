@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:tflite/tflite.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -33,6 +34,15 @@ class _HomeState extends State<Home> {
   bool _loading = false;
 
   // member functions
+  loadModel() async {
+    String res = await Tflite.loadModel(
+      model: "assets/model.tflite",
+      labels: "assets/dict.txt",
+      isAsset: true
+    );
+    print("Result of loading the model: $res");
+  }
+
   updateVariables(){
     if (_outputs != null){
       setState(() {
@@ -68,6 +78,7 @@ class _HomeState extends State<Home> {
   void initState() {
     _loading = true;
     super.initState();
+    loadModel();
     _loading = false;
   }
 
