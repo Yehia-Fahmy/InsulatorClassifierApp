@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
 import 'package:image/image.dart' as img;
+import 'dart:typed_data';
 
 
 void main() {
