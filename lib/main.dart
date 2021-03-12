@@ -120,7 +120,7 @@ class _HomeState extends State<Home> {
   classifyImage(File imageFile) async {
     print('classifying...');
     img.Image image = img.decodeImage(imageFile.readAsBytesSync());
-    var binaryImage = imageToByteListUint8(image, 223);
+    var binaryImage = imageToByteListUint8(image, 224);
     var recognitions = await Tflite.runModelOnBinary(
         binary: binaryImage,// required
         numResults: 7,    // defaults to 5
