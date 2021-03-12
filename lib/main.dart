@@ -1,12 +1,13 @@
+import 'dart:isolate';
+
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
-import 'package:firebase_ml_custom/firebase_ml_custom.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:firebase_core/firebase_core.dart';
-//import 'package:image/image.dart';
+import 'package:image/image.dart' as img;
+import 'dart:typed_data';
+import 'dart:isolate';
+
 
 void main() {
   runApp(MaterialApp(
@@ -37,157 +38,110 @@ class _HomeState extends State<Home> {
   // classification variables
   List _outputs;
   bool _loading = false;
-  // string to hold the result of loading the model
-  Future<String> _loadedMessage;
 
   // member functions
-  void initializeFlutterFire() async {
-    try {
-      await Firebase.initializeApp();
+  loadModel() async {
+    String res = await Tflite.loadModel(
+      model: "assets/model.tflite",
+      labels: "assets/dict.txt",
+      isAsset: true
+    );
+    print("Result of loading the model: $res");
+    if (res == 'success'){
       setState(() {
         _initialized = true;
       });
     }
-    catch (e){
-      setState(() {
-        _error = true;
-      });
-    }
-  }
-
-
-  static Future<String> mlLoadModel() async {
-    final modelFile = await loadModelFromFirebase();
-    return await loadTFLiteModel(modelFile);
-  }
-
-  static Future<File> loadModelFromFirebase() async {
-    try {
-      // Create model with a name that is specified in the Firebase console
-      final model = FirebaseCustomRemoteModel('TF_Lite_Model');
-
-      // Specify conditions when the model can be downloaded.
-      // If there is no wifi access when the app is started,
-      // this app will continue loading until the conditions are satisfied.
-      final conditions = FirebaseModelDownloadConditions(
-          androidRequireWifi: true, iosAllowCellularAccess: false);
-
-      // Create model manager associated with default Firebase App instance.
-      final modelManager = FirebaseModelManager.instance;
-
-      // Begin downloading and wait until the model is downloaded successfully.
-      await modelManager.download(model, conditions);
-      assert(await modelManager.isModelDownloaded(model) == true);
-
-      // Get latest model file to use it for inference by the interpreter.
-      var modelFile = await modelManager.getLatestModelFile(model);
-      assert(modelFile != null);
-      return modelFile;
-    } catch (exception) {
-      print('Failed on loading your model from Firebase: $exception');
-      print('The program will not be resumed');
-      rethrow;
-    }
-  }
-
-  static Future<String> loadTFLiteModel(File modelFile) async {
-    try {
-      final appDirectory = await getApplicationDocumentsDirectory();
-      final labelsData =
-      await rootBundle.load("assets/labels.txt");
-      final labelsFile =
-      await File(appDirectory.path + "/_labels.txt")
-          .writeAsBytes(labelsData.buffer.asUint8List(
-          labelsData.offsetInBytes, labelsData.lengthInBytes));
-
-      assert(await Tflite.loadModel(
-        model: modelFile.path,
-        labels: labelsFile.path,
-        isAsset: false,
-      ) ==
-          "success");
-      return "Model is loaded";
-    } catch (exception) {
-      print(
-          'Failed on loading your model to the TFLite interpreter: $exception');
-      print('The program will not be resumed');
-      rethrow;
-    }
   }
 
   updateVariables(){
-    setState(() {
-      classification = _outputs[0]['label'].toString().substring(2);
-      certainty = _outputs[0]['confidence'] * 100;
-      certaintyString = certainty.toString().substring(0,5);
-    });
-  }
-
-  loadModel() async {
-    await Tflite.loadModel(
-      model: "assets/model_unquant.tflite",   // this model was trained using google.trainable.net (its not very good)
-      //model: "assets/TF_Lite_Model.tflite",
-      labels: "assets/labels.txt",
-    );
-  }
-
-  @override
-  void dispose() {
-    Tflite.close();
-    super.dispose();
+    if (_outputs != null){
+      setState(() {
+        classification = _outputs[0]['label'].toString().substring(2);
+        certainty = _outputs[0]['confidence'] * 100;
+        certaintyString = certainty.toString().substring(0,5);
+      });
+    }else {
+      print("output is empty");
+    }
   }
 
   takePicture(){
     // TODO implement taking picture with camera
   }
 
+  reloadModel() {
+    print('reloading model...');
+    Tflite.close();
+    loadModel();
+  }
+
   // function to pick the image from library
   pickImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
     if (image == null) return null;
-    classifyImage(image);
     setState(() {
       _image = image;
     });
     updateVariables();
   }
 
-  classifyImage(File image) async {
-    print('classifying');
-    var output = await Tflite.runModelOnImage(
-      path: image.path,
-      numResults: 2,
-      threshold: 0.5,
-      imageMean: 127.5,
-      imageStd: 127.5,
+  Uint8List imageToByteListUint8(img.Image image, int inputSize) {
+    var convertedBytes = Uint8List(1 * inputSize * inputSize * 3);
+    var buffer = Uint8List.view(convertedBytes.buffer);
+    int pixelIndex = 0;
+    for (var i = 0; i < inputSize; i++) {
+      for (var j = 0; j < inputSize; j++) {
+        var pixel = image.getPixel(j, i);
+        buffer[pixelIndex++] = img.getRed(pixel);
+        buffer[pixelIndex++] = img.getGreen(pixel);
+        buffer[pixelIndex++] = img.getBlue(pixel);
+      }
+    }
+    return convertedBytes.buffer.asUint8List();
+  }
+
+  Uint8List imageToByteListFloat32(
+      img.Image image, int inputSize, double mean, double std) {
+    var convertedBytes = Float32List(1 * inputSize * inputSize * 3);
+    var buffer = Float32List.view(convertedBytes.buffer);
+    int pixelIndex = 0;
+    for (var i = 0; i < inputSize; i++) {
+      for (var j = 0; j < inputSize; j++) {
+        var pixel = image.getPixel(j, i);
+        buffer[pixelIndex++] = (img.getRed(pixel) - mean) / std;
+        buffer[pixelIndex++] = (img.getGreen(pixel) - mean) / std;
+        buffer[pixelIndex++] = (img.getBlue(pixel) - mean) / std;
+      }
+    }
+    return convertedBytes.buffer.asUint8List();
+  }
+
+  classifyImage(File imageFile) async {
+    print('classifying...');
+    img.Image image = img.decodeImage(imageFile.readAsBytesSync());
+    var binaryImage = imageToByteListUint8(image, 224);
+    var recognitions = await Tflite.runModelOnBinary(
+        binary: binaryImage,// required
+        numResults: 7,    // defaults to 5
+        threshold: 0.05,  // defaults to 0.1
+        asynch: false      // defaults to true
     );
-    setState(() {
-      _loading = false;
-      _outputs = output;
-    });
+    //print(recognitions);
   }
 
   @override
   void initState() {
     _loading = true;
-    // initializeFlutterFire();
-    // setState(() {
-    //   _loadedMessage = mlLoadModel();
-    //   _loading = false;
-    // });
-    // if (_initialized) {
-    //   print('flutterfire has initialized succesfully');
-    // }
-    // else {
-    //   print('we were unable to initialize');
-    // }
-    Tflite.close();
     super.initState();
-    loadModel().then((value) {
-      setState(() {
-        _loading = false;
-      });
-    });
+    loadModel();
+    _loading = false;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    Tflite.close();
   }
 
   @override
@@ -227,7 +181,7 @@ class _HomeState extends State<Home> {
                 height: 350,
                 width: 350,
                 child: _image == null ? Icon(Icons.camera_alt_outlined) : Image.file(_image),
-                color: themeColor,
+                color: _initialized ? themeColor : Colors.red[900],
               ),
 
               // Classify button
@@ -235,9 +189,7 @@ class _HomeState extends State<Home> {
                 padding: EdgeInsets.all(15.0),
                 child: ElevatedButton(
                   child: Text('Classify'),
-                  onPressed: () {
-                    updateVariables();
-                  },
+                  onPressed: () => classifyImage(_image),
                   style: ButtonStyle(
                     foregroundColor: MaterialStateProperty.all(themeColor3),
                     backgroundColor: MaterialStateProperty.all(themeColor),
@@ -286,11 +238,9 @@ class _HomeState extends State<Home> {
                     padding: EdgeInsets.all(15.0),
                     child: ElevatedButton(
                       child: Icon(
-                        Icons.camera_alt_outlined,
+                        Icons.refresh_outlined,
                       ),
-                      onPressed: () {
-                        takePicture();
-                      },
+                      onPressed: () => reloadModel(),
                       style: ButtonStyle(
                         foregroundColor: MaterialStateProperty.all(themeColor3),
                         backgroundColor: MaterialStateProperty.all(themeColor),
