@@ -70,6 +70,12 @@ class _HomeState extends State<Home> {
     // TODO implement taking picture with camera
   }
 
+  reloadModel() {
+    print('reloading model...');
+    Tflite.close();
+    loadModel();
+  }
+
   // function to pick the image from library
   pickImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
@@ -98,11 +104,12 @@ class _HomeState extends State<Home> {
   classifyImage(File imageFile) async {
     print('classifying...');
     img.Image image = img.decodeImage(imageFile.readAsBytesSync());
+    var binaryImage = imageToByteListUint8(image, 224);
     var recognitions = await Tflite.runModelOnBinary(
-        binary: imageToByteListUint8(image, 224),// required
+        binary: binaryImage,// required
         numResults: 7,    // defaults to 5
         threshold: 0.05,  // defaults to 0.1
-        asynch: true      // defaults to true
+        asynch: false      // defaults to true
     );
     print(recognitions);
   }
@@ -113,6 +120,12 @@ class _HomeState extends State<Home> {
     super.initState();
     loadModel();
     _loading = false;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    Tflite.close();
   }
 
   @override
@@ -209,11 +222,9 @@ class _HomeState extends State<Home> {
                     padding: EdgeInsets.all(15.0),
                     child: ElevatedButton(
                       child: Icon(
-                        Icons.camera_alt_outlined,
+                        Icons.refresh_outlined,
                       ),
-                      onPressed: () {
-                        takePicture();
-                      },
+                      onPressed: () => reloadModel(),
                       style: ButtonStyle(
                         foregroundColor: MaterialStateProperty.all(themeColor3),
                         backgroundColor: MaterialStateProperty.all(themeColor),
