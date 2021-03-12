@@ -75,8 +75,30 @@ class _HomeState extends State<Home> {
     updateVariables();
   }
 
+  Uint8List imageToByteListUint8(img.Image image, int inputSize) {
+    var convertedBytes = Uint8List(1 * inputSize * inputSize * 3);
+    var buffer = Uint8List.view(convertedBytes.buffer);
+    int pixelIndex = 0;
+    for (var i = 0; i < inputSize; i++) {
+      for (var j = 0; j < inputSize; j++) {
+        var pixel = image.getPixel(j, i);
+        buffer[pixelIndex++] = img.getRed(pixel);
+        buffer[pixelIndex++] = img.getGreen(pixel);
+        buffer[pixelIndex++] = img.getBlue(pixel);
+      }
+    }
+    return convertedBytes.buffer.asUint8List();
+  }
+
   classifyImage(File image) async {
     print('classifying...');
+    var recognitions = await Tflite.runModelOnBinary(
+        binary: imageToByteListFloat32(image, 224, 127.5, 127.5),// required
+        numResults: 6,    // defaults to 5
+        threshold: 0.05,  // defaults to 0.1
+        asynch: true      // defaults to true
+    );
+    print(recognitions);
   }
 
   @override
